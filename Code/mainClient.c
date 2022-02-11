@@ -41,8 +41,10 @@ int main(int argc, char* argv[])
             for(i=0;i<20;i++)      //can support 20 clients at a time
             {
                 pthread_create(&t[i],NULL,ClientSend,(void *)(long)serverFileDescriptor);
+                pthread_join(&t[i],NULL);
             }
         }
+        close(clientFileDescriptor);
     }
     else{
         printf("socket creation failed");
