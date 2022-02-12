@@ -6,7 +6,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <common.h>
+#include "common.h"
 
 char **stringArray;
 
