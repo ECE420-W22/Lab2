@@ -11,7 +11,18 @@
 
 char **stringArray;
 double timeArray[COM_NUM_REQUEST];
+int arraySize;
 pthread_mutex_t *arrayMutex;
+
+static void sigintHandler(int sig)
+{
+    for (int i = 0; i < arraySize; i++)
+    {
+        free(&stringArray[i]);
+    }
+    free(arrayMutex);
+    free(stringArray);
+}
 
 void *ServerHandle(void *args)
 {
@@ -78,6 +89,7 @@ int main(int argc, char *argv[])
                 write(clientFileDescriptor, returnVal, COM_BUFF_SIZE);
                 close(clientFileDescriptor);
                 timeArray[i] = end - start;
+                free(returnVal);
             }
             saveTimes(timeArray, COM_NUM_REQUEST);
         }

@@ -11,8 +11,18 @@
 #include "rwLock.c"
 
 char **stringArray;
+int arraySize;
 double timeArray[COM_NUM_REQUEST];
 mylib_rwlock_t arrayRWLock;
+
+static void sigintHandler(int sig)
+{
+    for (int i = 0; i < arraySize; i++)
+    {
+        free(&stringArray[i]);
+    }
+    free(stringArray);
+}
 
 void *ServerHandle(void *args)
 {
@@ -45,7 +55,7 @@ int main(int argc, char *argv[])
 
     mylib_rwlock_init(&arrayRWLock);
 
-    int arraySize = strtol(argv[1], NULL, 10);
+    arraySize = strtol(argv[1], NULL, 10);
     char *ip = argv[2];
     int port = strtol(argv[3], NULL, 10);
 
@@ -81,6 +91,7 @@ int main(int argc, char *argv[])
                 write(clientFileDescriptor, returnVal, COM_BUFF_SIZE);
                 close(clientFileDescriptor);
                 timeArray[i] = end - start;
+                free(returnVal);
             }
             saveTimes(timeArray, COM_NUM_REQUEST);
         }
