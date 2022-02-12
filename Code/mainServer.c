@@ -9,6 +9,7 @@
 #include "common.h"
 
 char **stringArray;
+pthread_mutex_t arrayMutex;
 
 void *ServerHandle(void *args)
 {
@@ -18,18 +19,15 @@ void *ServerHandle(void *args)
 
     read(clientFileDescriptor, str, COM_BUFF_SIZE);
     ParseMsg(str, &req);
-    // Unsafe get and set vvvv
-    if (req.is_read)
-    {
-        char *arrayVal;
-        getContent(arrayVal, req.pos, stringArray);
-        write(clientFileDescriptor, arrayVal, COM_BUFF_SIZE);
-    }
-    else
+    // Critical section begin
+    char arrayVal[COM_BUFF_SIZE];
+    if (!req.is_read)
     {
         setContent(req.msg, req.pos, stringArray);
     }
-    // Unsafe get and set end ^^^^
+    getContent(arrayVal, req.pos, stringArray);
+    write(clientFileDescriptor, arrayVal, COM_BUFF_SIZE);
+    // Critical section end
     close(clientFileDescriptor);
     return NULL;
 }
@@ -41,6 +39,8 @@ int main(int argc, char *argv[])
     int clientFileDescriptor;
     pthread_t t[COM_NUM_REQUEST];
 
+    pthread_mutex_init(&arrayMutex, NULL);
+
     int arraySize = strtol(argv[1], NULL, 10);
     char *ip = argv[2];
     int port = strtol(argv[3], NULL, 10);
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     stringArray = malloc(arraySize * sizeof(char *));
     for (int i = 0; i < arraySize; i++)
     {
-        stringArray[i] = malloc(sizeof(char *));
+        stringArray[i] = malloc(COM_BUFF_SIZE * sizeof(char));
     }
 
     sock_var.sin_addr.s_addr = inet_addr(ip);

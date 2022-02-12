@@ -21,16 +21,13 @@ void *ServerHandle(void *args)
     ParseMsg(str, &req);
     // Critical section begin
     pthread_mutex_lock(&arrayMutex);
-    if (req.is_read)
-    {
-        char *arrayVal;
-        getContent(arrayVal, req.pos, stringArray);
-        write(clientFileDescriptor, arrayVal, COM_BUFF_SIZE);
-    }
-    else
+    char arrayVal[COM_BUFF_SIZE];
+    if (!req.is_read)
     {
         setContent(req.msg, req.pos, stringArray);
     }
+    getContent(arrayVal, req.pos, stringArray);
+    write(clientFileDescriptor, arrayVal, COM_BUFF_SIZE);
     pthread_mutex_unlock(&arrayMutex);
     // Critical section end
     close(clientFileDescriptor);
@@ -53,7 +50,7 @@ int main(int argc, char *argv[])
     stringArray = malloc(arraySize * sizeof(char *));
     for (int i = 0; i < arraySize; i++)
     {
-        stringArray[i] = malloc(sizeof(char *));
+        stringArray[i] = malloc(COM_BUFF_SIZE * sizeof(char));
     }
 
     sock_var.sin_addr.s_addr = inet_addr(ip);
