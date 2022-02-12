@@ -7,29 +7,28 @@
 #include <unistd.h>
 #include <pthread.h>
 #include "common.h"
+#include "timer.h"
 
 char **stringArray;
-pthread_mutex_t arrayMutex;
+double timeArray[COM_NUM_REQUEST];
 
 void *ServerHandle(void *args)
 {
     int clientFileDescriptor = (int)args;
     char str[COM_BUFF_SIZE];
     ClientRequest req;
-
+    char arrayVal[COM_BUFF_SIZE] = malloc(COM_BUFF_SIZE * sizeof(char));
     read(clientFileDescriptor, str, COM_BUFF_SIZE);
     ParseMsg(str, &req);
     // Critical section begin
-    char arrayVal[COM_BUFF_SIZE];
     if (!req.is_read)
     {
         setContent(req.msg, req.pos, stringArray);
     }
     getContent(arrayVal, req.pos, stringArray);
-    write(clientFileDescriptor, arrayVal, COM_BUFF_SIZE);
     // Critical section end
     close(clientFileDescriptor);
-    return NULL;
+    return arrayVal;
 }
 
 int main(int argc, char *argv[])
@@ -38,8 +37,6 @@ int main(int argc, char *argv[])
     int serverFileDescriptor = socket(AF_INET, SOCK_STREAM, 0);
     int clientFileDescriptor;
     pthread_t t[COM_NUM_REQUEST];
-
-    pthread_mutex_init(&arrayMutex, NULL);
 
     int arraySize = strtol(argv[1], NULL, 10);
     char *ip = argv[2];
@@ -62,10 +59,22 @@ int main(int argc, char *argv[])
         {
             for (int i = 0; i < COM_NUM_REQUEST; i++)
             {
+                char *returnVal; // The return value for the write
+                double start;    // Time after server accepts client
+                double end;      // Time before server writes to client
                 clientFileDescriptor = accept(serverFileDescriptor, NULL, NULL);
+                // Don't include print to the measure
                 printf("Connected to client %d\n", clientFileDescriptor);
+                // Start measuring time
+                GET_TIME(start);
                 pthread_create(&t[i], NULL, ServerHandle, (void *)(long)clientFileDescriptor);
+                pthread_join(t[i], (void **)&returnVal);
+                // Stop measuring time
+                GET_TIME(end);
+                write(clientFileDescriptor, *returnVal, COM_BUFF_SIZE);
+                timeArray[clientFileDescriptor] = end - start;
             }
+            saveTimes(timeArray, COM_NUM_REQUEST);
         }
         close(serverFileDescriptor);
     }
