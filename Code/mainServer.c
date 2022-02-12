@@ -10,14 +10,15 @@
 
 char **stringArray;
 
-void *ServerEcho(void *args)
+void *ServerHandle(void *args)
 {
     int clientFileDescriptor = (int)args;
-    char str[20];
+    char str[COM_BUFF_SIZE];
+    ClientRequest req;
 
-    read(clientFileDescriptor, str, 20);
-    printf("reading from client:%s\n", str);
-    write(clientFileDescriptor, str, 20);
+    read(clientFileDescriptor, str, COM_BUFF_SIZE);
+    ParseMsg(str, &req);
+
     close(clientFileDescriptor);
     return NULL;
 }
@@ -52,7 +53,7 @@ int main(int argc, char *argv[])
             {
                 clientFileDescriptor = accept(serverFileDescriptor, NULL, NULL);
                 printf("Connected to client %d\n", clientFileDescriptor);
-                pthread_create(&t[i], NULL, ServerEcho, (void *)(long)clientFileDescriptor);
+                pthread_create(&t[i], NULL, ServerHandle, (void *)(long)clientFileDescriptor);
             }
         }
         close(serverFileDescriptor);
