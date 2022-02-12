@@ -9,6 +9,7 @@
 #include <common.h>
 
 char **stringArray;
+pthread_mutex_t arrayMutex;
 
 void *ServerHandle(void *args)
 {
@@ -18,7 +19,8 @@ void *ServerHandle(void *args)
 
     read(clientFileDescriptor, str, COM_BUFF_SIZE);
     ParseMsg(str, &req);
-    // Unsafe get and set vvvv
+    // Critical section begin
+    pthread_mutex_lock(&arrayMutex);
     if (req.is_read)
     {
         char *arrayVal;
@@ -29,7 +31,8 @@ void *ServerHandle(void *args)
     {
         setContent(req.msg, req.pos, stringArray);
     }
-    // Unsafe get and set end ^^^^
+    pthread_mutex_unlock(&arrayMutex);
+    // Critical section end
     close(clientFileDescriptor);
     return NULL;
 }
@@ -40,6 +43,8 @@ int main(int argc, char *argv[])
     int serverFileDescriptor = socket(AF_INET, SOCK_STREAM, 0);
     int clientFileDescriptor;
     pthread_t t[COM_NUM_REQUEST];
+
+    pthread_mutex_init(&arrayMutex, NULL);
 
     int arraySize = strtol(argv[1], NULL, 10);
     char *ip = argv[2];
