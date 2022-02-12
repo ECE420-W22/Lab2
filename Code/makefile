@@ -1,7 +1,9 @@
 CC = gcc
-SERVER_NAMES = main1 main2 main3
+SERVER_NAMES = main1 main2 main3 main4
 SERVER_NAME = server
 CLIENT_NAME = client
+
+all: $(SERVER_NAMES)
 
 main1: main1.o
 	$(CC) -pthread -o main1 main1.o -lm
