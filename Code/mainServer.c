@@ -18,7 +18,16 @@ void *ServerHandle(void *args)
 
     read(clientFileDescriptor, str, COM_BUFF_SIZE);
     ParseMsg(str, &req);
-
+    if (req.is_read)
+    {
+        char *arrayVal;
+        getContent(arrayVal, req.pos, stringArray);
+        write(clientFileDescriptor, arrayVal, COM_BUFF_SIZE);
+    }
+    else
+    {
+        setContent(req.msg, req.pos, stringArray);
+    }
     close(clientFileDescriptor);
     return NULL;
 }
