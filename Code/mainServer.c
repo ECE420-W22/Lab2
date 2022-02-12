@@ -18,6 +18,7 @@ void *ServerHandle(void *args)
 
     read(clientFileDescriptor, str, COM_BUFF_SIZE);
     ParseMsg(str, &req);
+    // Unsafe get and set vvvv
     if (req.is_read)
     {
         char *arrayVal;
@@ -28,6 +29,7 @@ void *ServerHandle(void *args)
     {
         setContent(req.msg, req.pos, stringArray);
     }
+    // Unsafe get and set end ^^^^
     close(clientFileDescriptor);
     return NULL;
 }
