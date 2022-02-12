@@ -17,7 +17,7 @@ void *ServerHandle(void *args)
     int clientFileDescriptor = (int)args;
     char str[COM_BUFF_SIZE];
     ClientRequest req;
-    char arrayVal[COM_BUFF_SIZE] = malloc(COM_BUFF_SIZE * sizeof(char));
+    char *arrayVal = malloc(COM_BUFF_SIZE * sizeof(char));
     read(clientFileDescriptor, str, COM_BUFF_SIZE);
     ParseMsg(str, &req);
     // Critical section begin
@@ -27,8 +27,7 @@ void *ServerHandle(void *args)
     }
     getContent(arrayVal, req.pos, stringArray);
     // Critical section end
-    close(clientFileDescriptor);
-    return arrayVal;
+    return (void *)arrayVal;
 }
 
 int main(int argc, char *argv[])
@@ -71,8 +70,9 @@ int main(int argc, char *argv[])
                 pthread_join(t[i], (void **)&returnVal);
                 // Stop measuring time
                 GET_TIME(end);
-                write(clientFileDescriptor, *returnVal, COM_BUFF_SIZE);
-                timeArray[clientFileDescriptor] = end - start;
+                write(clientFileDescriptor, returnVal, COM_BUFF_SIZE);
+                close(clientFileDescriptor);
+                timeArray[i] = end - start;
             }
             saveTimes(timeArray, COM_NUM_REQUEST);
         }
