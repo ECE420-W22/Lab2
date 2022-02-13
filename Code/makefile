@@ -1,7 +1,6 @@
 CC = gcc
 CFLAGS = -std=c99
 SERVER_NAMES = main1 main2 main3 main4
-SERVER_NAME = server
 CLIENT_NAME = client
 
 all: $(SERVER_NAMES)
@@ -14,8 +13,6 @@ main3: main3.o
 	$(CC) $(CFLAGS) -pthread -o main3 main3.o -lm
 main4: main4.o
 	$(CC) $(CFLAGS) -pthread -o main4 main4.o -lm
-$(SERVER_NAME): server.o
-	$(CC) $(CFLAGS) -pthread -o $(SERVER_NAME) server.o -lm
 $(CLIENT_NAME): client.o
 	$(CC) $(CFLAGS) -pthread -o $(CLIENT_NAME) client.o -lm
 
@@ -29,10 +26,8 @@ main4.o: main4.c common.h timer.h rwLock.o
 	$(CC) $(CFLAGS) -c main4.c -o main4.o
 rwLock.o: rwLock.c 
 	$(CC) $(CFLAGS) -c rwLock.c -o rwLock.o
-server.o : mainServer.c common.h timer.h
-	$(CC) $(CFLAGS) -c mainServer.c -o server.o
-client.o : mainClient.c common.h timer.h
-	$(CC) $(CFLAGS) -c mainClient.c -o client.o
+client.o : client.c common.h timer.h
+	$(CC) $(CFLAGS) -c client.c -o client.o
 
 
 clean:
