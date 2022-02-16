@@ -16,7 +16,8 @@ pthread_mutex_t arrayMutex;
 
 static void sigintHandler(int sig)
 {
-    for (int i = 0; i < arraySize; i++)
+    int i;
+    for (i = 0; i < arraySize; i++)
     {
         free(&stringArray[i]);
     }
@@ -57,7 +58,8 @@ int main(int argc, char *argv[])
     int port = strtol(argv[3], NULL, 10);
 
     stringArray = malloc(arraySize * sizeof(char *));
-    for (int i = 0; i < arraySize; i++)
+    int i;
+    for (i = 0; i < arraySize; i++)
     {
         stringArray[i] = malloc(COM_BUFF_SIZE * sizeof(char));
     }
@@ -71,7 +73,7 @@ int main(int argc, char *argv[])
         listen(serverFileDescriptor, 2000);
         while (1) // loop infinity
         {
-            for (int i = 0; i < COM_NUM_REQUEST; i++)
+            for (i = 0; i < COM_NUM_REQUEST; i++)
             {
                 char *returnVal; // The return value for the write
                 double start;    // Time after server accepts client
