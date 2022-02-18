@@ -37,9 +37,14 @@ void *ServerHandle(void *args)
     if (!req.is_read)
     {
         setContent(req.msg, req.pos, stringArray);
+        pthread_mutex_unlock(&arrayMutex);
+        strcpy(arrayVal, req.msg);
     }
-    getContent(arrayVal, req.pos, stringArray);
-    pthread_mutex_unlock(&arrayMutex);
+    else
+    {
+        getContent(arrayVal, req.pos, stringArray);
+        pthread_mutex_unlock(&arrayMutex);
+    }
     // Critical section end
     return (void *)arrayVal;
 }

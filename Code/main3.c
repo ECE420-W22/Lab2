@@ -39,10 +39,14 @@ void *ServerHandle(void *args)
         mylib_rwlock_wlock(&arrayRWLock);
         setContent(req.msg, req.pos, stringArray);
         mylib_rwlock_unlock(&arrayRWLock);
+        strcpy(arrayVal, req.msg);
     }
-    mylib_rwlock_rlock(&arrayRWLock);
-    getContent(arrayVal, req.pos, stringArray);
-    mylib_rwlock_unlock(&arrayRWLock);
+    else
+    {
+        mylib_rwlock_rlock(&arrayRWLock);
+        getContent(arrayVal, req.pos, stringArray);
+        mylib_rwlock_unlock(&arrayRWLock);
+    }
     // Critical section end
     return (void *)arrayVal;
 }
